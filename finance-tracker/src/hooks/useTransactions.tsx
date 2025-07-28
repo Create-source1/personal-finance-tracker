@@ -12,7 +12,7 @@ import {
 //   where,
 } from 'firebase/firestore';
 import { db } from '../firebase/firebase';
-import type { Transaction } from '../types/Transaction';
+import type { Transaction, TransactionForm } from '../types/Transaction';
 import type { User } from 'firebase/auth';
 
 export function useTransactions(user: User | null) {
@@ -51,16 +51,16 @@ export function useTransactions(user: User | null) {
   }, [userId]);
 
   const addTransaction = useCallback(
-    async (tx: Omit<Transaction, 'id'>) => {
-      if (!userId) return;
+    async (tx: Omit<TransactionForm, 'id'>) => {
+      if (!userId) throw new Error('User not authenticated');;
       await addDoc(collection(db, 'users', userId, 'transactions'), tx);
     },
     [userId]
   );
 
   const updateTransaction = useCallback(
-    async (id: string, updatedData: Partial<Transaction>) => {
-      if (!userId) return;
+    async (id: string, updatedData: Partial<TransactionForm>) => {
+      if (!userId) throw new Error('User not authenticated');;
       const docRef = doc(db, 'users', userId, 'transactions', id);
       await updateDoc(docRef, updatedData);
     },
@@ -69,7 +69,7 @@ export function useTransactions(user: User | null) {
 
   const deleteTransaction = useCallback(
     async (id: string) => {
-      if (!userId) return;
+      if (!userId) throw new Error('User not authenticated');;
       const docRef = doc(db, 'users', userId, 'transactions', id);
       await deleteDoc(docRef);
     },

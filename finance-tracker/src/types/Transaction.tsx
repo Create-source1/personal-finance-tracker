@@ -1,9 +1,15 @@
 // src/types/Transaction.ts
-export interface Transaction {
-  id?: string; // Firestore doc ID (optional when creating)
+
+// Used for creating or updating a transaction
+export interface TransactionForm {
   description: string;
   amount: number;
   type: 'Income' | 'Expense';
   category: string;
-  date: string; // ISO string
+  date: string; // yyyy-mm-dd
+}
+
+// Returned from Firestore (includes ID)
+export interface Transaction extends TransactionForm {
+  id: string;
 }

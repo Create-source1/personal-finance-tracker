@@ -1,4 +1,56 @@
-#root {
+@import "tailwindcss";
+
+/* TransactionTable.css */
+.transaction-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 20px;
+  table-layout: fixed;
+  font-family: 'Inter', sans-serif;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.transaction-table th,
+.transaction-table td {
+  padding: 12px 8px;
+}
+
+.transaction-table thead {
+  background-color: #f9fafb;
+  color: #374151;
+  font-weight: 600;
+  border-bottom: 2px dotted #e5e7eb;
+}
+
+.transaction-table tbody tr {
+  border-bottom: 1px dashed #e5e7eb;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.transaction-table tbody tr:hover {
+  background-color: #f3f4f6;
+}
+
+/* .transaction-table td button {
+  margin: 0 4px;
+  padding: 4px 8px;
+  font-size: 0.85rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: transparent;
+  color: #2563eb;
+}
+
+.transaction-table td button:hover {
+  text-decoration: underline;
+} */
+
+
+/* #root {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
@@ -39,4 +91,4 @@
 
 .read-the-docs {
   color: #888;
-}
+} */
