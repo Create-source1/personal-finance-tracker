@@ -17,21 +17,21 @@ export default function BalanceSummary({ transactions }: Props) {
   const balance = income - expense;
 
   return (
-    <div style={{ marginTop: 30, marginBottom: 30 }}>
-      <h2>Current Balance</h2>
+    <div className="my-8">
+      <h2 className="text-xl font-bold mb-4">Current Balance</h2>
       <p>
         <strong>📊 Net Balance:</strong>{" "}
-        <span style={{ color: balance >= 0 ? "green" : "red" }}>
+        <span className={balance >= 0 ? "text-green-600" : "text-red-600"}>
           INR {balance.toFixed(2)}
         </span>
       </p>
       <p>
         <strong>💰 Total Income:</strong>{" "}
-        <span style={{ color: "green" }}>INR {income.toFixed(2)}</span>
+        <span className="text-green-600">INR {income.toFixed(2)}</span>
       </p>
       <p>
         <strong>💸 Total Expenses:</strong>{" "}
-        <span style={{ color: "red" }}>INR {expense.toFixed(2)}</span>
+        <span className="text-red-600">INR {expense.toFixed(2)}</span>
       </p>
     </div>
   );

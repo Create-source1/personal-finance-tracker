@@ -1,17 +1,21 @@
 // src/pages/Dashboard.tsx
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useTransactions } from "../hooks/useTransactions";
 import type { Transaction, TransactionForm } from "../types/Transaction";
 import TransactionList from "../components/TransactionList";
 import BalanceSummary from "../components/BalanceSummary";
 import BalanceDonutChart from "../components/BalanceDonutChart";
+import useDebounce from "../hooks/useDebounce";
+// import ThemeToggle from "../components/ThemeToggle";
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const [editingId, setEditingId] = useState<Transaction | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const formRef = useRef<HTMLDivElement>(null);
 
   const {
     transactions,
@@ -78,6 +82,13 @@ export default function Dashboard() {
           return 0;
       }
     });
+  // Search logic + debouncing
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const searchedTransactions = filteredTransactions.filter((tx) =>
+    (tx.description + tx.category)
+      .toLowerCase()
+      .includes(debouncedSearchTerm.toLowerCase())
+  );
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -150,6 +161,7 @@ export default function Dashboard() {
       date: tx.date,
     });
     setEditingId(tx);
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const handleDelete = async (id: string) => {
@@ -166,11 +178,12 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 sm:p-8">
+    <div className="min-h-screen bg-gray-100 p-4 sm:p-8 bg-gradient-to-br from-blue-400 via-purple-300 to-pink-300">
       <div className="max-w-4xl mx-auto space-y-8">
         <h1 className="text-2xl font-bold text-gray-800">
-          Welcome, {user?.email}
+          Welcome, {user?.email} !
         </h1>
+        {/* <ThemeToggle/> */}
         <button
           onClick={logout}
           className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded cursor-pointer"
@@ -179,7 +192,7 @@ export default function Dashboard() {
         </button>
 
         {/* Balance Summary + DonutChart */}
-        <div className="bg-white rounded-lg shadow p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-6 sm:gap-8">
           <BalanceSummary transactions={transactions} />
           <BalanceDonutChart
             income={income}
@@ -188,7 +201,10 @@ export default function Dashboard() {
           />
         </div>
         {/* Add Transaction Form */}
-        <div className="bg-white rounded-lg shadow p-6 max-w-xl mx-auto">
+        <div
+          ref={formRef}
+          className="bg-white rounded-lg shadow p-6 max-w-xl mx-auto"
+        >
           <h2 className="text-xl font-semibold mb-4">
             {editingId ? "Edit Transaction" : "➕ Add Transaction"}
           </h2>
@@ -197,7 +213,7 @@ export default function Dashboard() {
               name="description"
               type="text"
               placeholder="Description"
-              className="w-full border border-gray-300 rounded px-3 py-2"
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm sm:text-base"
               value={form.description}
               onChange={handleChange}
               required
@@ -207,7 +223,7 @@ export default function Dashboard() {
               type="number"
               step="0.01"
               placeholder="Amount"
-              className="w-full border border-gray-300 rounded px-3 py-2"
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm sm:text-base"
               value={form.amount}
               onChange={handleChange}
               required
@@ -216,7 +232,7 @@ export default function Dashboard() {
               name="type"
               value={form.type}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded px-3 py-2"
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm sm:text-base"
             >
               <option value="Income">Income</option>
               <option value="Expense">Expense</option>
@@ -225,7 +241,7 @@ export default function Dashboard() {
               name="category"
               type="text"
               placeholder="Category: Food/Rent/Utilities/Freelance"
-              className="w-full border border-gray-300 rounded px-3 py-2"
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm sm:text-base"
               value={form.category}
               onChange={handleChange}
               required
@@ -233,7 +249,7 @@ export default function Dashboard() {
             <input
               name="date"
               type="date"
-              className="w-full border border-gray-300 rounded px-3 py-2"
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm sm:text-base"
               value={form.date}
               onChange={handleChange}
             />
@@ -241,7 +257,7 @@ export default function Dashboard() {
             <button
               type="submit"
               disabled={submitting}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full cursor-pointer"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full cursor-pointer text-sm sm:text-base"
             >
               {submitting
                 ? "Adding..."
@@ -251,31 +267,31 @@ export default function Dashboard() {
             </button>
           </form>
           {editingId && (
-              <div className="mt-4">
-            <button
-              type="button"
-              onClick={() => {
-                setEditingId(null);
-                setForm({
-                  description: "",
-                  amount: 0,
-                  type: "Expense",
-                  category: "",
-                  date: new Date().toISOString().split("T")[0],
-                });
-              }}
-              className="bg-gray-300 hover:bg-gray-400 text-gray-800 text-sm px-4 py-2 rounded cursor-pointer"
-            >
-              Cancel Edit
-            </button>
-              </div>
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingId(null);
+                  setForm({
+                    description: "",
+                    amount: 0,
+                    type: "Expense",
+                    category: "",
+                    date: new Date().toISOString().split("T")[0],
+                  });
+                }}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 text-sm px-4 py-2 rounded cursor-pointer"
+              >
+                Cancel Edit
+              </button>
+            </div>
           )}
         </div>
 
         {/* Filtering and Sorting */}
         <div className="bg-white rounded-lg shadow p-6 max-w-xl mx-auto">
           <h2 className="text-xl font-semibold mb-2">📂 Filter & 🔽 Sort</h2>
-          <div className="flex flex-wrap gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-4 mb-6">
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value as any)}
@@ -313,17 +329,34 @@ export default function Dashboard() {
         </div>
 
         {/* Transaction Table */}
-        <div className="bg-white rounded-lg shadow p-6 mx-auto">
-          <h2 className="text-xl font-semibold mb-2">Transactions 📝</h2>
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6 mx-auto overflow-x-auto">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+            <h2 className="text-xl font-semibold">Transactions 📝</h2>
+            {/* Search box */}
+            <div className="relative w-full sm:w-64">
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                🔍
+              </span>
+              <input
+                type="text"
+                placeholder="Search transactions..."
+                className="w-full border border-gray-300 rounded px-3 py-2 pl-10 text-sm"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+
           {txLoading ? (
             <p>Loading transactions...</p>
           ) : error ? (
             <p className="text-red-600">{error}</p>
           ) : (
             <TransactionList
-              transactions={filteredTransactions}
+              transactions={searchedTransactions}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              searchTerm={debouncedSearchTerm}
             />
           )}
         </div>
