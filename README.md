@@ -64,6 +64,7 @@ npm run dev
 ```
 ---
 ## 📁 Folder Structure
+```
 src/
 │
 ├── components/         # Reusable UI components
@@ -72,6 +73,7 @@ src/
 ├── types/              # TypeScript interfaces
 ├── firebase/           # Firebase config
 └── App.tsx             # Main app router
+```
 
 ---
 ## ✅ Todos

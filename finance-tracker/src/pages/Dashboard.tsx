@@ -203,7 +203,7 @@ export default function Dashboard() {
         {/* Add Transaction Form */}
         <div
           ref={formRef}
-          className="bg-white rounded-lg shadow p-6 max-w-xl mx-auto"
+          className="bg-white rounded-lg shadow p-6 max-w-4xl mx-auto"
         >
           <h2 className="text-xl font-semibold mb-4">
             {editingId ? "Edit Transaction" : "➕ Add Transaction"}
@@ -289,7 +289,7 @@ export default function Dashboard() {
         </div>
 
         {/* Filtering and Sorting */}
-        <div className="bg-white rounded-lg shadow p-6 max-w-xl mx-auto">
+        <div className="bg-white rounded-lg shadow p-6 max-w-4xl mx-auto">
           <h2 className="text-xl font-semibold mb-2">📂 Filter & 🔽 Sort</h2>
           <div className="flex flex-col sm:flex-row sm:flex-wrap gap-4 mb-6">
             <select
