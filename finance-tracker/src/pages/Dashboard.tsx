@@ -1,4 +1,5 @@
 // src/pages/Dashboard.tsx
+import DatePicker from "react-datepicker";
 import { useState, useRef } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useTransactions } from "../hooks/useTransactions";
@@ -7,6 +8,7 @@ import TransactionList from "../components/TransactionList";
 import BalanceSummary from "../components/BalanceSummary";
 import BalanceDonutChart from "../components/BalanceDonutChart";
 import useDebounce from "../hooks/useDebounce";
+import CategoryPieChart from "../components/CategoryPieChart";
 // import ThemeToggle from "../components/ThemeToggle";
 
 export default function Dashboard() {
@@ -51,6 +53,9 @@ export default function Dashboard() {
     "All"
   );
   const [categoryFilter, setCategoryFilter] = useState<string>("All");
+  // No-limit range
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [sortBy, setSortBy] = useState<
     "date-desc" | "date-asc" | "amount-desc" | "amount-asc"
   >("date-desc");
@@ -66,8 +71,23 @@ export default function Dashboard() {
       const matchType = typeFilter === "All" || tx.type === typeFilter;
       const matchCategory =
         categoryFilter === "All" || tx.category === categoryFilter;
-      return matchType && matchCategory;
+
+      let matchDate = true;
+      if (startDate) matchDate = new Date(tx.date) >= startDate;
+      if (endDate)
+        matchDate =
+          matchDate &&
+          new Date(tx.date) <=
+            new Date(endDate.getTime() + 24 * 60 * 60 * 1000);
+
+      return matchType && matchCategory && matchDate;
     })
+    // .filter((tx) => {
+    //   const matchType = typeFilter === "All" || tx.type === typeFilter;
+    //   const matchCategory =
+    //     categoryFilter === "All" || tx.category === categoryFilter;
+    //   return matchType && matchCategory;
+    // })
     .sort((a, b) => {
       switch (sortBy) {
         case "date-desc":
@@ -82,6 +102,13 @@ export default function Dashboard() {
           return 0;
       }
     });
+
+  //
+  const handleClearRange = () => {
+    setStartDate(undefined);
+    setEndDate(undefined);
+  };
+
   // Search logic + debouncing
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const searchedTransactions = filteredTransactions.filter((tx) =>
@@ -200,6 +227,13 @@ export default function Dashboard() {
             balance={balance}
           />
         </div>
+
+        {/* Category Pie Chart */}
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6 mt-6">
+          <h2 className="text-xl font-semibold mb-4">Category Breakdown 📊</h2>
+          <CategoryPieChart filteredTransactions={filteredTransactions} />
+        </div>
+        
         {/* Add Transaction Form */}
         <div
           ref={formRef}
@@ -314,6 +348,63 @@ export default function Dashboard() {
                 </option>
               ))}
             </select>
+            {/* Range */}
+            <div className="flex flex-wrap items-center gap-3 mt-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-700">From:</span>
+                <DatePicker
+                  selected={startDate}
+                  onChange={(date) => setStartDate(date ?? undefined)}
+                  selectsStart
+                  startDate={startDate}
+                  endDate={endDate}
+                  maxDate={new Date()} // Prevent picking future start date
+                  placeholderText="Start date"
+                  className="border border-gray-300 rounded px-3 py-2 cursor-pointer text-sm"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-700">To:</span>
+                <DatePicker
+                  selected={endDate}
+                  onChange={(date) => setEndDate(date ?? undefined)}
+                  selectsEnd
+                  startDate={startDate}
+                  endDate={endDate}
+                  minDate={startDate}
+                  maxDate={new Date()} // Prevent picking future start date
+                  placeholderText="End date"
+                  className="border border-gray-300 rounded px-3 py-2 cursor-pointer text-sm"
+                />
+              </div>
+
+              {(startDate || endDate) && (
+                <button
+                  onClick={handleClearRange}
+                  className="bg-gray-200 hover:bg-green-300 text-gray-800 text-sm px-3 py-2 rounded transition cursor-pointer"
+                >
+                  Clear Range
+                </button>
+              )}
+            </div>
+
+            {/* <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-700">From:</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="border border-gray-300 rounded px-3 py-2 cursor-pointer"
+              />
+              <label className="text-sm text-gray-700">To:</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="border border-gray-300 rounded px-3 py-2 cursor-pointer"
+              />
+            </div> */}
 
             <select
               value={sortBy}
@@ -327,6 +418,39 @@ export default function Dashboard() {
             </select>
           </div>
         </div>
+
+        {(categoryFilter !== "All" || startDate || endDate) && (
+          <div className="mt-4 p-3 sm:p-4 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 border border-blue-200 rounded-xl shadow-sm text-gray-800 text-sm sm:text-base flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 transition-all">
+            <div>
+              <span className="font-medium">Showing total</span>
+              {categoryFilter !== "All" && (
+                <>
+                  {" "}
+                  for{" "}
+                  <span className="font-semibold text-purple-700">
+                    {categoryFilter}
+                  </span>
+                </>
+              )}
+              {startDate && endDate && (
+                <>
+                  {" "}
+                  from{" "}
+                  <span className="text-gray-600 font-medium">
+                    {startDate.toLocaleDateString()} -{" "}
+                    {endDate.toLocaleDateString()}
+                  </span>
+                </>
+              )}
+            </div>
+            <div className="text-lg sm:text-xl font-bold text-blue-800 bg-blue-100 px-3 py-1.5 rounded-lg shadow-inner">
+              ₹
+              {filteredTransactions
+                .reduce((sum, tx) => sum + tx.amount, 0)
+                .toFixed(2)}
+            </div>
+          </div>
+        )}
 
         {/* Transaction Table */}
         <div className="bg-white rounded-lg shadow p-4 sm:p-6 mx-auto overflow-x-auto">

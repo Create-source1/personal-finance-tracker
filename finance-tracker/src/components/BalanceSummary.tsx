@@ -18,7 +18,7 @@ export default function BalanceSummary({ transactions }: Props) {
 
   return (
     <div className="my-8">
-      <h2 className="text-xl font-bold mb-4">Current Balance</h2>
+      <h2 className="text-xl font-bold mb-4">Lifetime Balance</h2>
       <p>
         <strong>📊 Net Balance:</strong>{" "}
         <span className={balance >= 0 ? "text-green-600" : "text-red-600"}>
